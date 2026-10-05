@@ -2,7 +2,6 @@ from datetime import date
 from flask import Flask, abort, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
-from flask_gravatar import Gravatar
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_manager, login_required
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
@@ -12,6 +11,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # Import your forms from the forms.py
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 import bleach
+from dotenv import load_dotenv
+import os
+import hashlib
 
 
 '''
@@ -26,11 +28,18 @@ pip3 install -r requirements.txt
 
 This will install the packages from the requirements.txt for this project.
 '''
-
+load_dotenv()
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 ckeditor = CKEditor(app)
 Bootstrap5(app)
+
+@app.template_filter('gravatar')
+def gravatar_url(email):
+    # Convert the email to lowercase, encode it, and hash it with MD5
+    email_hash = hashlib.md5(email.lower().encode('utf-8')).hexdigest()
+    # Return the URL matching Gravatar's exact requirements
+    return f"https://www.gravatar.com/avatar/{email_hash}?s=100&d=retro&r=g"
 
 # TODO: Configure Flask-Login
 
@@ -61,15 +70,6 @@ def admin_only(f):
 def load_user(user_id):
     return db.session.get(User,user_id)
 
-# Initialize Gravatar with the Flask app
-gravatar = Gravatar(app,
-                    size=100,
-                    rating='g',
-                    default='retro',
-                    force_default=False,
-                    force_lower=False,
-                    use_ssl=True,
-                    base_url=None)
 
 
 # CONFIGURE TABLES
