@@ -107,8 +107,8 @@ class Comment(db.Model):
     post_id:Mapped[int]=mapped_column(Integer,ForeignKey("blog_posts.id"))
     post=relationship("BlogPost",back_populates="comments")
 
-with app.app_context():
-    db.create_all()
+# with app.app_context():
+#     db.create_all()
 
 
 # TODO: Use Werkzeug to hash the user's password when creating a new user.
